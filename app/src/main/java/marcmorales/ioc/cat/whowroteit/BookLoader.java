@@ -16,7 +16,6 @@ public class BookLoader extends AsyncTaskLoader<String> {
     protected void onStartLoading() {
         super.onStartLoading();
 
-        //No se cargaran datos hasta que no se llame a este metodo
         forceLoad();
     }
 

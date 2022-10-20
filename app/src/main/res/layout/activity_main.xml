@@ -61,22 +61,24 @@
 
     <Switch
         android:id="@+id/swEpub"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="46dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:onClick="searchBooks"
+        app:layout_constraintEnd_toStartOf="@+id/tvEpub"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/searchButton"
         app:layout_constraintTop_toBottomOf="@+id/bookInput" />
 
     <TextView
         android:id="@+id/tvEpub"
-        android:layout_width="163dp"
-        android:layout_height="28dp"
-        android:layout_marginTop="20dp"
+        android:layout_width="0dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="32dp"
         android:text="Buscar libro electrónico"
+        android:textSize="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/swEpub"
         app:layout_constraintTop_toBottomOf="@+id/bookInput" />
 
 

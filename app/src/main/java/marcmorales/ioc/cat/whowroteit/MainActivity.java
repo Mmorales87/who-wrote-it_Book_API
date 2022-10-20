@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void searchBooks(View view) {
-        //Convertimos el nombre del libro y lo asignamos a una variable con la que realizaremos la consulta
+
         String queryString = mBookInput.getText().toString();
 
         InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -53,28 +53,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
 
-        //Verificamos que la conexion de red este disponible
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = null;
         if (connMgr != null) {
             networkInfo = connMgr.getActiveNetworkInfo();
         }
 
-        //Comprobamos que exista la conexion, que la red este conectada y que exista una cadena de texto para buscar
 
         if (networkInfo != null && networkInfo.isConnected() && queryString.length() != 0) {
             Bundle queryBundle = new Bundle();
             queryBundle.putString("queryString", queryString);
-            /**
-             * getSupportLoaderManager() esta deprecated.
-             * getSupportLoaderManager().restartLoader(0, queryBundle, this);
-             *
-             * restartLoader toma tres argumentos.
-             *              id: que en caso de que implementasemos mas de un Loader lo usariamos
-             *              Bundle: para cualquier dato que necesite el Loader
-             *              LoaderCallBacks: instancia lo que implementamos. Si queremos que el Loader
-             *              nos proporcione los resultados dentro del MainActivity, usaremos this
-             */
+
             LoaderManager.getInstance(this).restartLoader(0, queryBundle, this);
 
             mAuthorText.setText("");
@@ -92,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @NonNull
     @Override
-    //Se llama al crear una instancia del loader
     public Loader<String> onCreateLoader(int id, @Nullable Bundle args) {
         String queryString = "";
 
@@ -103,68 +91,40 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    //Se llama cuando finaliza el loader. Aqui agregamos el codigo para actualizar la interfaz con los datos obtenidos
     public void onLoadFinished(@NonNull Loader<String> loader, String data) {
+        System.out.println(data);
 
         try {
-            //Obtenemos los elementos del JSON
+
             JSONObject jsonObject = new JSONObject(data);
-            //recogemos los items del array
             JSONArray itemsArray = jsonObject.getJSONArray("items");
+            Boolean findAvailable = switchEpub.isChecked();
 
-            int i = 0;
-            String title = null;
-            String authors = null;
-            Boolean isAvailable = null;
+            for( int index = 0; index < itemsArray.length(); ++index)
+            {
+                // Accedemos al libro
+                JSONObject currentBook = itemsArray.getJSONObject( index );
 
+                JSONObject currentBookVolumeInfo = currentBook.getJSONObject( "volumeInfo" );
+                String currentBookTitle = currentBookVolumeInfo.getString("title");
+                String currentBookAuthors = currentBookVolumeInfo.getString("authors");
 
-            while (i < itemsArray.length() && (authors == null && title == null)) {
+                JSONObject currentBookAccessInfo = currentBook.getJSONObject("accessInfo");
+                Boolean currentBookIsAvailable = currentBookAccessInfo.getJSONObject("epub").getBoolean("isAvailable");
 
-
-                JSONObject book = itemsArray.getJSONObject(i);
-                JSONObject volumeInfo = book.getJSONObject("volumeInfo");
-                JSONObject accessInfo = book.getJSONObject("accessInfo");
-
-                try {
-                    title = volumeInfo.getString("title");
-                    authors = volumeInfo.getString("authors");
-                    JSONObject epub = accessInfo.getJSONObject("epub");
-                    isAvailable = epub.getBoolean("isAvailable");
-
-                } catch (Exception error) {
-                    error.printStackTrace();
+                if( currentBookTitle != null && currentBookAuthors != null && currentBookIsAvailable == findAvailable )
+                {
+                    mTitleText.setText(currentBookTitle);
+                    mAuthorText.setText(currentBookAuthors);
+                    break;
                 }
 
-                i++;
-            }
+                // Mientras no se cumple el if de arriba, comprovamos esto
+                if( index != itemsArray.length() - 1 ) continue;
 
-            String finalTitle = title;
-            String finalAuthors = authors;
-            Boolean finalIsAvailable = isAvailable;
-            switchEpub.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-
-
-                    if (isChecked && finalTitle != null && finalAuthors != null && finalIsAvailable) {
-                        mTitleText.setText(finalTitle);
-                        mAuthorText.setText(finalAuthors);
-                    } else {
-                        mTitleText.setText(R.string.no_results);
-                        mAuthorText.setText("");
-                    }
-                }
-            });
-
-
-            if (finalTitle != null && finalAuthors != null && finalIsAvailable) {
-                mTitleText.setText(finalTitle);
-                mAuthorText.setText(finalAuthors);
-            } else {
                 mTitleText.setText(R.string.no_results);
                 mAuthorText.setText("");
             }
-
 
         } catch (Exception error) {
             mTitleText.setText(R.string.no_results);
@@ -174,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    //No hace nada pero se necesita para la interfaz
     public void onLoaderReset(@NonNull Loader<String> loader) {
 
     }
